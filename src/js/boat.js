@@ -7,6 +7,7 @@ var Boat = {
     score: 0, //得分
     started: false, //是否开始
     si: null,//计时
+    ready: false, //是否可以开始游戏
 
     move: function(){
     	var s = 0
@@ -35,6 +36,10 @@ var Boat = {
       var Rand = Math.random();
       var num = Min + Math.round(Rand * Range); //四舍五入
       return num;
-}
+	},
+	resetLogo: function(){
+		var r = this.RandomNumBoth(1,5)
+		return r
+	}
 }
 export default Boat
