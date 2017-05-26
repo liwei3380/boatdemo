@@ -5,23 +5,25 @@
     </div>
     <div v-bind:class="contentClass" ref="wwater" style="left:0rem;">
       <div class="jianzhu">
-        
+        <div :class="cloud"></div>
         <img src="../assets/game_water3.png" class="water3" ref="water1">
         
       </div>
       <div class="jianzhu2">
-        
+        <div :class="cloud2"></div>
         <img src="../assets/game_water3.png" class="water3" ref="water11">
         
       </div>
     </div>
     <div v-bind:class="contentClass" ref="water" style="left:0rem;">
       <div class="jianzhu">
-        
+        <div :class="cloud3"></div>
+
         <img src="../assets/game_water2.png" class="water2" ref="water2">
         
       </div>
       <div class="jianzhu2">
+        <div :class="cloud4"></div>
         
         <img src="../assets/game_water2.png" class="water2" ref="water22">
         
@@ -29,19 +31,26 @@
     </div>
     <div v-bind:class="contentClass" ref="jianzhu" style="left:0rem;">
       <div class="jianzhu">
-        <div :class="speed1" @click="setspeed(1)"></div>
+        <div :class="speed1" @click="setspeed(ss1)">
+          <div class="speedtext-ani">点我加速</div>
+        </div>
 
         <img src="../assets/game_water1.png" class="water1">
         <!-- <div class="speed2" @click="setspeed(2)">s2</div> -->
       </div>
       <div class="jianzhu2">
-        <div :class="speed2" @click="setspeed(1)"></div>
+        <div :class="speed2" @click="setspeed(ss2)">
+          <div class="speedtext-ani">点我加速</div>
+        </div>
 
         <img src="../assets/game_water1.png" class="water1">
         <!-- <div class="speed2" @click="setspeed(2)">s2</div> -->
       </div>
+      
     </div>
-    
+    <div :class="addspprom">
+      速度+{{addsp}}
+    </div>
     
     <div class="promcard">
       <div class="time">{{getTime}}</div>
@@ -71,23 +80,31 @@
         </div>
       </div>
       <div class="overtext ranktext" v-show=ranktext>
+      进击{{score}}米<br>
         排名<br>
         {{rank}}
         <div class="mybtn rtbtn" @click="tosubmit()">
-          提交信息
+          提交信息/赢取奖品
         </div>
-        <div class="mybtn" @click="getprise()">
-          赢取奖品
-        </div>
+        <!-- <div class="mybtn" @click="getprise()">
+          
+        </div> -->
         <div class="priseprom" @click="priseprom">
           奖品说明
         </div>
       </div>
       <div class="overtext submittext" v-show=submittext>
+        进击{{score}}米<br>
         <input class="input1" v-model=username type="text" name="name"  maxlength="11" placeholder="请输入姓名">
         <input class="input2" v-model=phone type="tel" maxlength="11" name="phone" placeholder="请输入手机号">
         <div class="mybtn" @click="submit()">
           提交
+        </div>
+      </div>
+      <div class="overtext submittext" v-show=submitsucc>
+        {{submitsucctext}}
+        <div class="mybtn againbtn" @click="restart()">
+          再玩一次
         </div>
       </div>
       <div class="overtext ppromtext" v-show=ppromtext>
@@ -122,18 +139,28 @@ export default {
     return {
       msg: 'Welcome to Your Vue.js App',
       contentClass: 'content',
-      time: 300,
+      time: 2000,
       score: 0,
       rank: 0,
       speed1: 'speed speed1',
       speed2: 'speed speed2',
+      ss1: 4,
+      ss2: 5,
+      addsp: 0,
+      addspprom: 'addspprom',
       gameover: false,
       overtext: true,
       ranktext: false,
       submittext: false,
       ppromtext: false,
+      submitsucc: false,
       boatpaddle: 'boat_paddle',
       has:null,
+      cloud:'cloud',
+      cloud2:'cloud2',
+      cloud3:'cloud3',
+      cloud4:'cloud4',
+      submitsucctext: '提交成功',
       username: '',
       phone: '',
       jianzhu: {
@@ -144,7 +171,7 @@ export default {
   },
   methods:{
     clickboat () {
-      boat.speed = 15
+      boat.speed = 20
       if(boat.ready == true && boat.started == false){
         boat.started = true
         let vm = this
@@ -170,7 +197,7 @@ export default {
                   console.log(err)
                 })
           }
-        },10)
+        },8)
       }
       if (boat.ready == true && this.time > 0) {
         this.$refs.paddle.style.transform = 'rotate(40deg)'
@@ -216,13 +243,23 @@ export default {
       if(leftnum < -7.2){
         leftnum = parseFloat((leftnum + 7.2).toFixed(2))
         this.speed1 = this.speed2
-        this.speed2 = 'speed speed' + boat.resetLogo()
+        let random = boat.resetLogo()
+        this.speed2 = 'speed speed' + random
+        this.ss1 = this.ss2
+        this.ss2 = random + 3
       }
       if(waterleftnum < -7.2){
         waterleftnum = parseFloat((waterleftnum + 7.2).toFixed(2))
+        
+        let cloud3 = this.cloud3
+        this.cloud3 = this.cloud4
+        this.cloud4 = cloud3
       }
       if(waterleftnum2 < -7.2){
         waterleftnum2 = parseFloat((waterleftnum2 + 7.2).toFixed(2))
+        let cloud = this.cloud
+        this.cloud = this.cloud2
+        this.cloud2 = cloud
       }
       left = ((leftnum*100 + parseInt(dleft))*0.01).toFixed(2) + 'rem'
       waterleft = ((waterleftnum*100 + parseInt(waterdleft))*0.01).toFixed(2) + 'rem'
@@ -232,8 +269,18 @@ export default {
       water2.style.left = waterleft2
     },
     setspeed(rate){
-      boat.speed = 15 + rate * 5
-       if (boat.ready == true && this.time > 0) {
+
+      boat.speed = 20 + parseInt(rate * 0.1 * 15)
+       if (boat.started == true && boat.ready == true && this.time > 0) {
+
+        this.addsp = parseInt(rate)*5 - 15
+        this.addspprom = 'addspprom'
+        let vm = this
+        clearTimeout(boat.addsppromtime)
+        boat.addsppromtime = setTimeout(function(){
+          vm.addspprom = 'addspprom addspprom-ani'
+        },100)
+
         this.$refs.paddle.style.transform = 'rotate(40deg)'
         this.$refs.ld.style.transform = 'rotate(99deg)'
         this.$refs.rd.style.transform = 'rotate(-85deg)'
@@ -252,11 +299,7 @@ export default {
       console.log('打开排行榜')
     },
     restart(){
-      this.gameover = false
-      boat.started = false
-      boat.score = 0
-      this.score = 0
-      this.time = 5
+      window.location.href = 'http://www.linki2u.com/wxjstxt/boat/dist/dao.html'
     },
     getrank(){
       //axios rank
@@ -264,12 +307,10 @@ export default {
       this.ranktext = true;
     },
     tosubmit(){
-      console.log(this.has)
       if (this.has == true) {
-        Toast({
-                message:'已经提交过信息',
-                duration: 2000
-              })
+        this.submitsucctext = '已记录用户信息'
+        this.submittext = false
+        this.submitsucc = true
       } else {
         this.ranktext = false;
         this.submittext = true;
@@ -307,11 +348,9 @@ export default {
           }).then(function(res){
             Indicator.close();
             if (res.data.message=="0") {
-              //vm.issuc = true
-              Toast({
-                message:'提交成功',
-                duration: 2000
-              })
+              vm.submittext = false
+              vm.submitsucc = true
+              
             } /*else if(res.data.message == "0"){
               //alert("重复的电话号")
               Toast({
@@ -339,17 +378,7 @@ export default {
     boat.started = false
     boat.ready = true
     boat.score = 0
-    axios.get(myconfig.hosturl+'/getboatcount?wechatid='+sessionStorage.getItem('wechatid')).then(function(res){
-      if (res.data.data == '0') {
-        boat.ready = false
-        Toast({
-                message:'今天游戏次数用完了',
-                duration: 2000
-              })
-      }
-    }).catch(function(err){
-      console.log(err)
-    });
+    
   },
   computed: {
     getTime(){
@@ -396,6 +425,38 @@ export default {
 }
 .ani{
   transition:left cubic-bezier(0, 0, 0.2, 1) 0.5s;
+}
+.cloud{
+  width: 3.61rem;
+  height: 1.88rem;
+  background: url("../assets/game_cloud1.png");
+  background-size: cover;
+  bottom:3.5rem;
+  left: 0rem;
+}
+.cloud2{
+  width: 3.39rem;
+  height: 1.79rem;
+  background: url("../assets/game_cloud2.png");
+  background-size: cover;
+  bottom:3.5rem;
+  left: 0rem;
+}
+.cloud3{
+  width: 2.05rem;
+  height: 1.22rem;
+  background: url("../assets/game_cloud3.png");
+  background-size: cover;
+  bottom:7.5rem;
+  right: 0rem;
+}
+.cloud4{
+  width: 2.01rem;
+  height: 1.19rem;
+  background: url("../assets/game_cloud4.png");
+  background-size: cover;
+  bottom: 7.5rem;
+  right: 0rem;
 }
 .boat{
   width:5.73rem;
@@ -489,14 +550,41 @@ export default {
   left: .25rem;
   top:1.6rem;
   width:2.23rem;
+  height: 2.23rem;
+  animation:sunrotate 10s linear infinite;
+}
+@keyframes sunrotate
+{
+from {transform:rotate(0deg);}
+to {transform:rotate(360deg);}
 }
 .game_sun{
   width: 2.23rem;
+  height: 2.23rem;
 }
 .speed{
   bottom:6.5rem;
   left:50%;
   transform: translateX(-50%);
+  font-size: 12px;
+  color: #002134;
+}
+.speed div{
+    width: 100%;
+    text-align: center;
+    top:-10%;
+}
+.speedtext-ani{
+  animation:speedtext 2s infinite;
+}
+@keyframes speedtext
+{
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
 }
 .speed1{
   width: 6.28rem;
@@ -608,14 +696,14 @@ export default {
   line-height: 24px;
 }
 .submittext{
-  padding-top: .95rem;
+  padding-top: .45rem;
 }
 .submittext input{
   width: 3.05rem;
   height: .85rem;
   border: 2px solid #51200D;
   display: block;
-  margin:0 0 .25rem 1.95rem;
+  margin:.15rem 0 .25rem 1.95rem;
   border-radius: .15rem;
   box-sizing: border-box;
   background: #F4D197;
@@ -639,8 +727,14 @@ export default {
   margin-top: 1.5rem;
 }
 .rtbtn{
+  width:3rem;
+  font-size: 12px;
   margin-top: .25rem;
+  margin-left: 2rem;
   margin-bottom: .25rem;
+}
+.againbtn{
+  margin-top:2rem;
 }
 .priseprom{
   font-size: 14px;
@@ -654,5 +748,29 @@ export default {
   position: absolute;
   top: .4rem;
   right: 1.95rem;
+}
+.addspprom{
+  z-index: 4;
+  width: 7.2rem;
+  position: absolute;
+  left:0;
+  font-size: 12px;
+  color: #002134;
+  text-align: center;
+  opacity: 0;
+}
+.addspprom-ani{
+  animation:addsp 1s;
+}
+@keyframes addsp
+{
+from {
+  bottom:6rem;
+  opacity: 1;
+}
+to {
+  bottom:6.5rem;
+  opacity: 0;
+}
 }
 </style>
